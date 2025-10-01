@@ -95,4 +95,8 @@ const Login = async (req, res) => {
   }
 };
 
+// ^----------------------------------Logout --------------------------
+
+
+
 module.exports = { Register, Login };

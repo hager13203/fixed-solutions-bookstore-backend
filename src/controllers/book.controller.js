@@ -23,48 +23,69 @@ const getBookById = async (req, res) => {
 // ^----------------------------------Add book--------------------------
 const addBook = async (req, res) => {
   try {
-    const newbook = await book.create(req.body);
-    res.status(201).json({ message: "book added Successfully", newbook });
+    const newBook = await Book.create({
+      ...req.body,
+      createdBy: req.user.id,
+      createdAt: new Date(),
+    });
+
+    res.status(201).json({
+      message: "Book added successfully",
+      book: newBook,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Server error.", error: error.message });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
 // ^-----------------------------Update book (ID in Params / ID in Token)-----------------------
-const updateBook = async (req, res, bookID) => {
+const updateBook = async (req, res) => {
   try {
-    if (!bookID)
+    const book = await Book.findById(req.params.id);
+    if (!book) return res.status(404).json({ message: "Book not found" });
+
+    // check if user is admin or the owner of the book
+    if (
+      req.user.role !== "admin" &&
+      book.createdBy.toString() !== req.user.id
+    ) {
       return res
-        .status(401)
-        .json({ message: "you are not authorized to get this content" });
-    const { title, description, amount } = req.body;
-    const book = await Book.findById(bookID);
-    if (!book) return res.status(404).json({ message: "book is not found" });
-    // * change title
-    if (title && title !== book.title) {
-      book.title = title;
+        .status(403)
+        .json({ message: "You are not allowed to update this book" });
     }
-    // * change description
-    if (description && description !== book.description) {
-      book.description = description;
-    }
-    // * change amount
-    if (amount && amount !== book.amount) {
-      book.amount = amount;
-    }
+
+    const updatedBook = await Book.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+
+    res.status(200).json({
+      message: "Book updated successfully",
+      book: updatedBook,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Server error.", error: error.message });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 // // ^----------------------------------Delete book--------------------------
 const deleteBook = async (req, res) => {
   try {
-    const book = await Book.findByIdAndDelete(req.params.id);
-    if (!book) {
-      return res.status(400).json({ message: "book not Found" });
+    const book = await Book.findById(req.params.id);
+    if (!book) return res.status(404).json({ message: "Book not found" });
+
+    // check if user is admin or the owner of the book
+    if (
+      req.user.role !== "admin" &&
+      book.createdBy.toString() !== req.user.id
+    ) {
+      return res
+        .status(403)
+        .json({ message: "You are not allowed to delete this book" });
     }
-    res.status(200).json({ message: "book deleted Successfully", book });
+
+    await Book.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: "Book deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 

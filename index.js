@@ -5,6 +5,7 @@ const userRouter = require("./src/routes/user.routes");
 const connectDB = require("./db/dbConnection");
 const bookRouter = require("./src/routes/book.routes");
 const authRouter = require("./src/routes/auth.routes");
+const cookieParser = require("cookie-parser");
 require("dotenv").config();
 
 const app = express();
@@ -13,7 +14,7 @@ const PORT = process.env.PORT || 3000;
 // middleware to parse JSON 
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
+app.use(cookieParser());
 connectDB();
 
 // ^--------------------Health Check

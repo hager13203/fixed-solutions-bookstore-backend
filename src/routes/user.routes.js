@@ -1,26 +1,30 @@
 // ^--------------------Imports
 const { Router } = require("express");
 const userController = require("../controllers/user.controller");
-const  validate  = require("../middlewares/schemaValidation.middleware");
+const validate = require("../middlewares/schemaValidation.middleware");
+const userRouter = Router();
 const {
   validateCreateUser,
   validateUpdateUser,
 } = require("../validation/userValidation");
-const userRouter = Router();
+const authenticate = require("../middlewares/authentication.middleware");
 
-// add user
-userRouter.post("/add",validate(validateCreateUser), userController.addUser);
 
 // get all users
-userRouter.get("/", userController.getAllUsers);
+userRouter.get("/",authenticate(["admin"]), userController.getAllUsers);
 
 // get user by id
-userRouter.get("/:id", userController.getUserById);
+userRouter.get("/:id", authenticate(["admin"]),userController.getUserById);
 
-// // update user by id
-// userRouter.put("/:id", validate(validateUpdateUser),userController.updateUser);
+// update user by id
+userRouter.patch(
+  "/:id",
+  authenticate(["user", "admin"]),
+  validate(validateUpdateUser),
+  userController.updateUser
+);
 
 // // delete user by id
-// userRouter.delete("/:id", userController.deleteUser);
+userRouter.delete("/:id", authenticate(["user", "admin"]),userController.deleteUser);
 
 module.exports = userRouter;
