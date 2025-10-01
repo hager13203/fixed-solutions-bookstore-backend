@@ -4,14 +4,17 @@ const bodyParser = require("body-parser");
 const userRouter = require("./src/routes/user.routes");
 const connectDB = require("./db/dbConnection");
 const bookRouter = require("./src/routes/book.routes");
+const authRouter = require("./src/routes/auth.routes");
 require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-app.use(bodyParser.urlencoded());
-connectDB();
-app.use(express.json());
 
+// middleware to parse JSON 
+app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+connectDB();
 // ^--------------------Health Check
 app.get("/health", async (req, res) => {
   const dbState = mongoose.connection.readyState;
@@ -23,6 +26,7 @@ app.get("/health", async (req, res) => {
 });
 
 // ^--------------------Main Routes
+app.use("/auth", authRouter);
 app.use("/users", userRouter);
 app.use("/books", bookRouter);
 
