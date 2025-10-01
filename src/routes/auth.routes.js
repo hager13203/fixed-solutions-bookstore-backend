@@ -4,6 +4,7 @@ const auth = require("../controllers/auth.controller");
 
 //* user registeration
 router.post("/register", auth.Register);
+router.post("/login", auth.Login);
 
 //* email activation
 

@@ -15,6 +15,7 @@ app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 connectDB();
+
 // ^--------------------Health Check
 app.get("/health", async (req, res) => {
   const dbState = mongoose.connection.readyState;
