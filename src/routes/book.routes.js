@@ -1,16 +1,47 @@
-// ^--------------------Imports
 const { Router } = require("express");
 const bookController = require("../controllers/book.controller");
 const validate = require("../middlewares/schemaValidation.middleware");
+const authenticate = require("../middlewares/authentication.middleware");
 const {
   validateCreateBook,
   validateUpdateBook,
 } = require("../validation/bookValidation");
-const authenticate = require("../middlewares/authentication.middleware");
 
 const bookRouter = Router();
 
-// add book (User or Admin can add)
+// Middleware: check if user is owner or admin for update/delete
+const authorizeBookOwner = async (req, res, next) => {
+  if (req.user.role === "user") {
+    const book = await require("../../db/models/book.model").findById(
+      req.params.id
+    );
+    if (!book) return res.status(404).json({ message: "Book not found" });
+    if (book.createdBy.toString() !== req.user.id) {
+      return res
+        .status(403)
+        .json({ message: "You are not allowed to modify this book" });
+    }
+  }
+  next();
+};
+
+// Middleware: check if user can buy book
+const canBuyBook = async (req, res, next) => {
+  const book = await require("../../db/models/book.model").findById(
+    req.params.id
+  );
+  if (!book) return res.status(404).json({ message: "Book not found" });
+  if (book.createdBy.toString() === req.user.id) {
+    return res.status(400).json({ message: "You cannot buy your own book" });
+  }
+  req.book = book; // pass to controller
+  next();
+};
+
+// Routes
+bookRouter.get("/", bookController.getAllBooks);
+bookRouter.get("/:id", bookController.getBookById);
+
 bookRouter.post(
   "/add",
   authenticate(["user", "admin"]),
@@ -18,54 +49,26 @@ bookRouter.post(
   bookController.addBook
 );
 
-// get all books 
-bookRouter.get("/", bookController.getAllBooks);
-
-// get book by id 
-bookRouter.get("/:id", bookController.getBookById);
-
-// update book by id
 bookRouter.put(
   "/:id",
   authenticate(["user", "admin"]),
   validate(validateUpdateBook),
-  async (req, res, next) => {
-
-    if (req.user.role === "user") {
-      const book = await bookController.findBookById(req.params.id); 
-      if (!book) {
-        return res.status(404).json({ message: "Book not found" });
-      }
-      if (book.createdBy.toString() !== req.user.id) {
-        return res
-          .status(403)
-          .json({ message: "You are not allowed to update this book" });
-      }
-    }
-    next();
-  },
+  authorizeBookOwner,
   bookController.updateBook
 );
 
-// delete book by id
 bookRouter.delete(
   "/:id",
   authenticate(["user", "admin"]),
-  async (req, res, next) => {
-    if (req.user.role === "user") {
-      const book = await bookController.findBookById(req.params.id);
-      if (!book) {
-        return res.status(404).json({ message: "Book not found" });
-      }
-      if (book.createdBy.toString() !== req.user.id) {
-        return res
-          .status(403)
-          .json({ message: "You are not allowed to delete this book" });
-      }
-    }
-    next();
-  },
+  authorizeBookOwner,
   bookController.deleteBook
+);
+
+bookRouter.post(
+  "/:id/buy",
+  authenticate(["user"]),
+  canBuyBook,
+  bookController.buyBook
 );
 
 module.exports = bookRouter;

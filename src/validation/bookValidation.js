@@ -58,7 +58,6 @@ const updateBookSchema = {
       description: "Amount must be a non-negative integer",
     },
   },
-  additionalProperties: false,
   errorMessage: {
     additionalProperties: "Extra fields are not allowed",
   },

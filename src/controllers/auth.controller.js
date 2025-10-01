@@ -96,7 +96,16 @@ const Login = async (req, res) => {
 };
 
 // ^----------------------------------Logout --------------------------
+// logout.controller.js
+const logout = (req, res) => {
+  // Clear the cookie
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: false, // set to true if using HTTPS (production)
+    sameSite: "strict",
+  });
 
+  res.status(200).json({ message: "Logged out successfully" });
+};
 
-
-module.exports = { Register, Login };
+module.exports = { Register, Login, logout };

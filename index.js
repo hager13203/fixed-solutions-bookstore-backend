@@ -6,6 +6,7 @@ const connectDB = require("./db/dbConnection");
 const bookRouter = require("./src/routes/book.routes");
 const authRouter = require("./src/routes/auth.routes");
 const cookieParser = require("cookie-parser");
+const swaggerDoc = require("swagger Doc/swaggerDoc");
 require("dotenv").config();
 
 const app = express();
@@ -27,6 +28,8 @@ app.get("/health", async (req, res) => {
   }
 });
 
+// ^--------------------Swagger UI
+swaggerDoc(app);
 // ^--------------------Main Routes
 app.use("/auth", authRouter);
 app.use("/users", userRouter);
