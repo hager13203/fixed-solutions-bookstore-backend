@@ -216,12 +216,13 @@
     "schemas": {
       "RegisterUser": {
         "type": "object",
-        "required": ["name", "email", "password"],
+        "required": ["name", "email", "password","age","role"],
         "properties": {
           "name": { "type": "string" },
           "email": { "type": "string" },
           "password": { "type": "string" },
-          "age": { "type": "integer" }
+          "age": { "type": "integer" },
+          "role": { "type": "string" }
         }
       },
       "LoginUser": {

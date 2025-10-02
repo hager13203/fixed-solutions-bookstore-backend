@@ -21,10 +21,20 @@ app.use(cookieParser());
 connectDB();
 
 // Enable CORS 
+const allowedOrigins = ["http://localhost:7005", "http://localhost:8000"]; 
+
 app.use(cors({
-  origin: "http://localhost:8000", // your Swagger UI origin
-  credentials: true               // allows cookies to be sent
+  origin: function(origin, callback) {
+    if (!origin) return callback(null, true); 
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true 
 }));
+
 
 // ^--------------------Health Check
 app.get("/health", async (req, res) => {
@@ -39,7 +49,18 @@ app.get("/health", async (req, res) => {
 // ^--------------------Swagger UI
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./swagger/swagger.json");
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerDocument, {
+    swaggerOptions: {
+      requestInterceptor: (req) => {
+        req.credentials = "include"; // send cookies
+        return req;
+      },
+    },
+  })
+);
 
 // ^--------------------Main Routes
 app.use("/auth", authRouter);
