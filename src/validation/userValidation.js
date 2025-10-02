@@ -36,7 +36,7 @@ const createUserSchema = {
       errorMessage: "Role must be either 'user' or 'admin'",
     },
   },
-  required: ["name", "email", "password", "role"],
+  required: ["name", "email", "password", "age","role"],
   additionalProperties: false,
   errorMessage: {
     required: {

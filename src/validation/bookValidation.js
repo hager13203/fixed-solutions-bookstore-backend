@@ -26,7 +26,7 @@ const createBookSchema = {
       description: "Amount must be a non-negative integer",
     },
   },
-  required: ["title", "description"],
+  required: ["title", "description", "amount"],
   additionalProperties: false,
   errorMessage: {
     required: {
